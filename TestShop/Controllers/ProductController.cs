@@ -74,14 +74,13 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         public IActionResult AddProductType(AddProductTypeData addProductTypeData)
         {
             var validationResult = addProductTypeData.ValidatrThis();
-            if (!validationResult.IsValid)
+            if (validationResult.IsValid)
             {
-                return BadRequest(validationResult);
+                var productType = _mapper.Map<ProductType>(addProductTypeData);
+                _productRepository.AddProductType(productType);
+                return CreatedAtAction(nameof(AddProductType), productType);
             }
-
-            var productType = _mapper.Map<ProductType>(addProductTypeData);
-            _productRepository.AddProductType(productType);
-            return CreatedAtAction(nameof(AddProductType), productType);
+            return BadRequest(validationResult);
         }
 
         [HttpPost]
@@ -90,14 +89,20 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         public IActionResult AddProduct(AddProductData addProductData)
         {
             var validationResult = addProductData.ValidateThis();
-            if (!validationResult.IsValid)
+            if (validationResult.IsValid)
             {
-                return BadRequest(validationResult);
+                try
+                {
+                    var product = _mapper.Map<Product>(addProductData);
+                    _productRepository.AddProduct(product);
+                    return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
             }
-
-            var product = _mapper.Map<Product>(addProductData);
-            _productRepository.AddProduct(product);
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            return BadRequest(validationResult);
         }
 
         [HttpDelete("Type/{id}")]

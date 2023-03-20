@@ -62,7 +62,17 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
 
         public OrderData[] GetAllClientOrders(GetClientOrdersData getClientOrdersData)
         {
-            var query = _dbContext.Orders.Where(o => o.ClientId == getClientOrdersData.ClientId);
+            IQueryable<Order> query = _dbContext.Orders;
+
+            if (getClientOrdersData?.ClientId != null)
+            {
+                var client = _dbContext.Clients.FirstOrDefault(c => c.Id == getClientOrdersData.ClientId);
+                if (client == null)
+                {
+                    throw new InvalidOperationException($"Client with id:{getClientOrdersData.ClientId} hasn't in repository!");
+                }
+                query = query.Where(o => o.ClientId == client.Id);
+            }
 
             if (getClientOrdersData.DateFrom != null)
             {

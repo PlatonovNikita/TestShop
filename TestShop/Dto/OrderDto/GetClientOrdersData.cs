@@ -9,7 +9,7 @@ namespace IXORA.PlatonovNikita.TestShop.Dto.OrderDto
         private readonly GetClientOrdersDataValidator _validator 
             = new GetClientOrdersDataValidator();
 
-        public Guid ClientId { get; set; }
+        public Guid? ClientId { get; set; }
         
         public DateTime? DateFrom { get; set; }
 

@@ -31,7 +31,7 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IEnumerable<Client> GetClients([FromQuery]GetClientsData getClientsData = null)
         {
-            getClientsData = getClientsData ?? new GetClientsData();
+            getClientsData ??= new GetClientsData();
             getClientsData.Pagination = SetDefaultPagination(getClientsData.Pagination);
 
             return _clientRepository.GetClients(getClientsData);
@@ -58,15 +58,14 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         public IActionResult Add(AddClientData addClientData)
         {
             var validationResult = addClientData.ValidateThis();
-            if (!validationResult.IsValid)
+            if (validationResult.IsValid)
             {
-                return BadRequest(validationResult);
+                var client = _mapper.Map<Client>(addClientData);
+                _clientRepository.Add(client);
+
+                return CreatedAtAction(nameof(GetClient), new { id = client.Id }, client);
             }
-
-            var client = _mapper.Map<Client>(addClientData);
-            _clientRepository.Add(client);
-
-            return CreatedAtAction(nameof(GetClient), new { id = client.Id}, client);
+            return BadRequest(validationResult);
         }
 
         [HttpDelete("{id}")]

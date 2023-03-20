@@ -25,9 +25,11 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
 
         public Guid AddProduct(Product product)
         {
-            if (product == null)
+            var productType = _dbContext.ProductTypes
+                                        .FirstOrDefault(pt => pt.Id == product.ProductTypeId);
+            if (productType == null)
             {
-                throw new ArgumentNullException(nameof(product));
+                throw new InvalidOperationException($"Product type with id:{product.ProductTypeId} hasn't in repository!");
             }
 
             _dbContext.Products.Add(product);

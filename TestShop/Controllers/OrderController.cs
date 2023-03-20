@@ -31,21 +31,20 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         public IActionResult CreateOrder(CreateOrderData createOrderData)
         {
             var validationResult = createOrderData.ValidateThis();
-            if (!validationResult.IsValid)
+            if (validationResult.IsValid)
             {
-                return BadRequest(validationResult);
+                try
+                {
+                    var order = _mapper.Map<Order>(createOrderData);
+                    _orderRepository.Add(order);
+                    return CreatedAtAction(nameof(CreateOrder), order);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
             }
-
-            try
-            {
-                var order = _mapper.Map<Order>(createOrderData);
-                _orderRepository.Add(order);
-                return CreatedAtAction(nameof(CreateOrder), order);
-            }
-            catch(InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return BadRequest(validationResult);
         }
 
         [HttpGet]
@@ -54,16 +53,23 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         public IActionResult GetClientOrders([FromQuery]GetClientOrdersData getClientOrdersData)
         {
             var validateResult = getClientOrdersData.ValidateThis();
-            if (!validateResult.IsValid)
+            if (validateResult.IsValid)
             {
-                return BadRequest(validateResult);
+                try
+                {
+                    getClientOrdersData ??= new GetClientOrdersData();
+                    getClientOrdersData.Pagination = SetDefaultPagination(getClientOrdersData.Pagination);
+
+                    var orders = _orderRepository.GetAllClientOrders(getClientOrdersData);
+                    return Ok(orders);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
             }
+            return BadRequest(validateResult);
 
-            getClientOrdersData ??= new GetClientOrdersData();
-            getClientOrdersData.Pagination = SetDefaultPagination(getClientOrdersData.Pagination);
-
-            var orders = _orderRepository.GetAllClientOrders(getClientOrdersData); 
-            return Ok(orders);
         }
 
         private Pagination SetDefaultPagination(Pagination pagination)
