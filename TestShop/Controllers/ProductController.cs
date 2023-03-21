@@ -5,7 +5,6 @@ using IXORA.PlatonovNikita.TestShop.Model.Entities;
 using IXORA.PlatonovNikita.TestShop.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 
@@ -20,14 +19,11 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
 
         private readonly IProductRepository _productRepository;
         private readonly IMapper _mapper;
-        private readonly IMemoryCache _memoryCache;
 
-        public ProductController(IProductRepository productRepository, IMapper mapper,
-                                 IMemoryCache memoryCache)
+        public ProductController(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
             _mapper = mapper;
-            _memoryCache = memoryCache;
         }
 
 
@@ -44,12 +40,20 @@ namespace IXORA.PlatonovNikita.TestShop.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IEnumerable<ProductData> GetProducts([FromQuery]ProductFilterData productFilterData)
+        public IActionResult GetProducts([FromQuery]ProductFilterData productFilterData)
         {
-            productFilterData ??= new ProductFilterData();
-            productFilterData.Pagination = SetDefaultPagination(productFilterData.Pagination);
-            
-            return _productRepository.GetProducts(productFilterData);
+            try
+            {
+                productFilterData ??= new ProductFilterData();
+                productFilterData.Pagination = SetDefaultPagination(productFilterData.Pagination);
+
+                var products = _productRepository.GetProducts(productFilterData);
+                return Ok(products);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]

@@ -27,6 +27,11 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
             {
                 try
                 {
+                    if (_dbContext.Clients.FirstOrDefault(c => c.Id == order.ClientId) == null)
+                    {
+                        throw new InvalidOperationException($"Client with id:{order.ClientId} hasn't in repository!");
+                    }
+
                     foreach (var orderLine in order.OrderLines)
                     {
                         var product = _dbContext.Products

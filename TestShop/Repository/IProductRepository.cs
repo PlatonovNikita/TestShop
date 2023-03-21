@@ -25,12 +25,6 @@ namespace IXORA.PlatonovNikita.TestShop.Repository
         public Guid AddProduct(Product product);
 
         /// <summary>
-        /// Add products to repository.
-        /// </summary>
-        /// <param name="products">Added products.</param>
-        public void AddRange(IEnumerable<Product> products);
-
-        /// <summary>
         /// Returns product types.
         /// </summary>
         /// <returns>Product types.</returns>

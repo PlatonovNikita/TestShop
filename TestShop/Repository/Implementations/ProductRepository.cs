@@ -29,7 +29,9 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
                                         .FirstOrDefault(pt => pt.Id == product.ProductTypeId);
             if (productType == null)
             {
-                throw new InvalidOperationException($"Product type with id:{product.ProductTypeId} hasn't in repository!");
+                throw new InvalidOperationException(
+                    $"Product type with id:{product.ProductTypeId} "
+                    + "hasn't in repository!");
             }
 
             _dbContext.Products.Add(product);
@@ -44,23 +46,15 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
             return productType.Id;
         }
 
-        public void AddRange(IEnumerable<Product> products)
-        {
-            if (products == null)
-            {
-                throw new ArgumentNullException(nameof(products));
-            }
-
-            _dbContext.Products.AddRange(products);
-            _dbContext.SaveChanges();
-        }
-
         public void DeleteProduct(Guid id)
         {
             var orderLine = _dbContext.OrderLines.FirstOrDefault(x => x.ProductId == id);
             if (orderLine != null)
             {
-                throw new InvalidOperationException($"Product with id: {id} can't be remove, because there is order line, that refers to this product.");
+                throw new InvalidOperationException(
+                    $"Product with id: {id} can't be remove, "
+                    + "because there is order line, "
+                    + "that refers to this product.");
             }
             _dbContext.Products.Remove(new Product { Id = id });
             _dbContext.SaveChanges();
@@ -71,7 +65,10 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
             var product = _dbContext.Products.FirstOrDefault(x => x.ProductTypeId == id);
             if (product != null)
             {
-                throw new InvalidOperationException($"Product type with id: {id} can't be remove, because there is product, that refers to this type.");
+                throw new InvalidOperationException(
+                    $"Product type with id: {id} can't be remove, "
+                    + "because there is product, "
+                    + "that refers to this type.");
             }
             _dbContext.ProductTypes.Remove(new ProductType { Id = id });
             _dbContext.SaveChanges();
@@ -85,7 +82,8 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
 
             if (product == null)
             {
-                throw new InvalidOperationException($"Product with id:{id} hasn't in repository!");
+                throw new InvalidOperationException(
+                    $"Product with id:{id} hasn't in repository!");
             }
 
             return _mapper.Map<ProductData>(product);
@@ -103,13 +101,20 @@ namespace IXORA.PlatonovNikita.TestShop.Repository.Implementations
             {
                 query = query.Where(p => p.Price <= productFilterData.MinPrice.Value);
             }
-            if (productFilterData?.ProductTypeId != null)
-            {
-                query = query.Where(p => p.ProductTypeId == productFilterData.ProductTypeId);
-            }
             if (productFilterData?.IsInStock == true)
             {
                 query = query.Where(p => p.Quantity > 0);
+            }
+            if (productFilterData?.ProductTypeId != null)
+            {
+                var productType = _dbContext.ProductTypes.FirstOrDefault(pt => pt.Id == productFilterData.ProductTypeId);
+                if (productType == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Product type with id:{productFilterData.ProductTypeId} "
+                        + "hasn't in repository!");
+                }
+                query = query.Where(p => p.ProductTypeId == productType.Id);
             }
             if (productFilterData?.IsOrderByAscendungPrice != null)
             {
